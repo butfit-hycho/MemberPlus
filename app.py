@@ -324,9 +324,21 @@ def get_database_connection():
 def get_google_sheets_client():
     """구글 시트 클라이언트 초기화 (캐시됨)"""
     try:
-        # Streamlit secrets에서 구글 서비스 계정 정보 로드
+        # Streamlit secrets에서 구글 서비스 계정 정보 확인
+        if "google_service_account" not in st.secrets:
+            st.warning("🔧 **구글 시트 연결 설정 필요**: Streamlit Cloud의 Secrets에 google_service_account를 설정해주세요.")
+            return None
+            
         google_credentials = st.secrets["google_service_account"]
         
+        # 필수 키들이 모두 있는지 확인
+        required_keys = ["type", "project_id", "private_key", "client_email"]
+        missing_keys = [key for key in required_keys if key not in google_credentials or not google_credentials[key]]
+        
+        if missing_keys:
+            st.warning(f"🔧 **구글 서비스 계정 설정 불완전**: 다음 키들이 누락되었거나 비어있습니다: {', '.join(missing_keys)}")
+            return None
+            
         credentials = Credentials.from_service_account_info(
             google_credentials,
             scopes=['https://www.googleapis.com/auth/spreadsheets']
@@ -479,13 +491,23 @@ def create_google_sheet(member_type, branch_name, df):
     """구글 시트 생성 또는 업데이트"""
     gc = get_google_sheets_client()
     if not gc:
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         st.markdown("""
         <div class="warning-box">
-        <strong>🔧 테스트 모드</strong><br/>
-        구글 시트 연결을 디버깅 중입니다.
+        <strong>🔧 구글 시트 연결 없음</strong><br/>
+        데이터는 추출되었지만 구글 시트에 업로드할 수 없습니다.<br/>
+        아래에서 데이터를 확인하고 CSV로 다운로드하세요.
         </div>
         """, unsafe_allow_html=True)
-        return None
+        
+        # 구글 시트 연결이 없어도 결과 반환 (로컬에서 볼 수 있도록)
+        return {
+            'sheet_name': branch_name,
+            'url': f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}",
+            'count': len(df),
+            'local_only': True
+        }
     
     try:
         # 기존 스프레드시트 열기
@@ -680,19 +702,39 @@ def main():
                         }
                         
                         # 성공 메시지
-                        st.success(f"""
-                        🎉 **데이터 추출 완료!**
-                        
-                        - **회원 유형**: {member_type}
-                        - **지점**: {selected_branch}
-                        - **추출 건수**: {len(df):,}명
-                        - **시트명**: {sheet_result['sheet_name']}
-                        - **기존 데이터 삭제 후 새로 입력됨**
-                        """)
-                        
-                        # 구글 시트 열기 버튼
-                        if st.button("📄 구글 시트 열기", type="secondary"):
-                            st.markdown(f"[구글 시트에서 보기]({sheet_result['url']})")
+                        if sheet_result.get('local_only', False):
+                            st.info(f"""
+                            📊 **데이터 추출 완료!** (로컬 모드)
+                            
+                            - **회원 유형**: {member_type}
+                            - **지점**: {selected_branch}
+                            - **추출 건수**: {len(df):,}명
+                            - **상태**: 구글 시트 연결 없음 (아래에서 CSV 다운로드 가능)
+                            """)
+                            
+                            # CSV 다운로드 버튼
+                            csv = df.to_csv(index=False, encoding='utf-8-sig')
+                            st.download_button(
+                                label="📥 CSV 파일 다운로드",
+                                data=csv,
+                                file_name=f"{selected_branch}_{member_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                                mime="text/csv",
+                                type="primary"
+                            )
+                        else:
+                            st.success(f"""
+                            🎉 **데이터 추출 완료!**
+                            
+                            - **회원 유형**: {member_type}
+                            - **지점**: {selected_branch}
+                            - **추출 건수**: {len(df):,}명
+                            - **시트명**: {sheet_result['sheet_name']}
+                            - **기존 데이터 삭제 후 새로 입력됨**
+                            """)
+                            
+                            # 구글 시트 열기 버튼
+                            if st.button("📄 구글 시트 열기", type="secondary"):
+                                st.markdown(f"[구글 시트에서 보기]({sheet_result['url']})")
                     else:
                         st.error("❌ 구글 시트 생성에 실패했습니다.")
                     
