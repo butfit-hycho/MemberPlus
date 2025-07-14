@@ -626,9 +626,9 @@ def main():
                         }}
                         .google-sheet-link-button:hover {{
                             background: #3730a3;
+                            color: white;
                             transform: translateY(-1px);
                             text-decoration: none;
-                            color: white;
                         }}
                         </style>
                         <div style="text-align: center; margin-top: 1rem;">
