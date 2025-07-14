@@ -605,9 +605,6 @@ def main():
                     # 구글 시트 열기 버튼
                     col1, col2, col3 = st.columns([1, 2, 1])
                     with col2:
-                        # 디버그용 URL 표시
-                        st.write(f"**생성된 URL**: {sheet_result['url']}")
-                        
                         # 링크 버튼 (CSS 호버 효과)
                         st.markdown(f"""
                         <style>
