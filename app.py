@@ -262,7 +262,6 @@ def get_google_sheets_client():
 def get_branches():
     """지점 목록 조회 (고정된 목록)"""
     return [
-        '전체',
         '역삼',
         '도곡', 
         '신도림',
@@ -276,7 +275,7 @@ def get_branches():
 
 def get_user_query(member_type, branch_name):
     """사용자 유형별 쿼리 생성"""
-    branch_condition = "" if branch_name == "전체" else f"AND p.name = '{branch_name}'"
+    branch_condition = f"AND p.name = '{branch_name}'"
     
     if member_type == "유효회원":
         return f"""
@@ -469,9 +468,21 @@ def create_google_sheet(member_type, branch_name, df):
         if not df.empty:
             worksheet.format('6:6', {'textFormat': {'bold': True}, 'backgroundColor': {'red': 0.9, 'green': 0.9, 'blue': 0.9}})
         
+        # 워크시트의 실제 gid 가져오기
+        try:
+            sheet_gid = worksheet._properties['sheetId']
+            print(f"[DEBUG] 워크시트 '{sheet_name}' gid: {sheet_gid}")
+        except Exception as e:
+            # 대체 방법: worksheet id 사용
+            sheet_gid = worksheet.id
+            print(f"[DEBUG] 워크시트 '{sheet_name}' 기본 id: {sheet_gid}, 에러: {e}")
+        
+        final_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit#gid={sheet_gid}"
+        print(f"[DEBUG] 최종 URL: {final_url}")
+        
         return {
             'sheet_name': sheet_name,
-            'url': f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit#gid={worksheet.id}",
+            'url': final_url,
             'count': len(df)
         }
     except Exception as e:
