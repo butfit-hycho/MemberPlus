@@ -605,17 +605,20 @@ def main():
                     # 구글 시트 열기 버튼
                     col1, col2, col3 = st.columns([1, 2, 1])
                     with col2:
+                        # 디버그용 URL 표시
+                        st.write(f"**생성된 URL**: {sheet_result['url']}")
+                        
+                        # 링크 버튼
                         st.markdown(f"""
                         <div style="text-align: center; margin-top: 1rem;">
-                            <button onclick="window.open('{sheet_result['url']}', '_blank')" 
-                                    style="background: #444FA9; color: white; border: none; border-radius: 0.5rem; 
-                                           padding: 0.75rem 2rem; font-weight: 600; font-size: 1rem; 
-                                           cursor: pointer; width: 100%; font-family: 'Pretendard', sans-serif;
-                                           transition: all 0.2s ease;"
-                                    onmouseover="this.style.background='#3730a3'; this.style.transform='translateY(-1px)'"
-                                    onmouseout="this.style.background='#444FA9'; this.style.transform='translateY(0)'">
-                                📄 구글 시트에서 보기
-                            </button>
+                            <a href="{sheet_result['url']}" target="_blank" style="text-decoration: none;">
+                                <button style="background: #444FA9; color: white; border: none; border-radius: 0.5rem; 
+                                               padding: 0.75rem 2rem; font-weight: 600; font-size: 1rem; 
+                                               cursor: pointer; width: 100%; font-family: 'Pretendard', sans-serif;
+                                               transition: all 0.2s ease;">
+                                    📄 구글 시트에서 보기
+                                </button>
+                            </a>
                         </div>
                         """, unsafe_allow_html=True)
                 else:
