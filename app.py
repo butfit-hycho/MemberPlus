@@ -257,7 +257,7 @@ def get_google_sheets_client():
             
         credentials = Credentials.from_service_account_info(
             google_credentials,
-            scopes=['https://www.googleapis.com/auth/spreadsheets']
+            scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
         )
         
         return gspread.authorize(credentials)
@@ -483,7 +483,7 @@ def main():
         관리자가 구글 서비스 계정을 설정해야 합니다.<br/><br/>
         
         <strong>필요한 설정:</strong><br/>
-        • 서비스 계정: <code>butfit-sheets-service@butfit-member-system.iam.gserviceaccount.com</code><br/>
+        • 서비스 계정: <code>memberplus@butfit-member-system.iam.gserviceaccount.com</code><br/>
         • 권한: Google Sheets API, Google Drive API<br/>
         • 스프레드시트 공유 권한 필요
         </div>
