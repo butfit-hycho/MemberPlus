@@ -4,7 +4,7 @@ import psycopg2
 import gspread
 import gspread.exceptions
 from google.oauth2.service_account import Credentials
-from datetime import datetime
+from datetime import datetime, date
 
 # 페이지 설정
 st.set_page_config(
@@ -437,8 +437,28 @@ def create_google_sheet(member_type, branch_name, df):
         
         # 데이터 준비
         if not df.empty:
+            # DataFrame의 모든 값을 안전하게 변환하여 JSON 직렬화 문제 해결
+            def safe_convert_value(value):
+                """값을 안전하게 문자열로 변환"""
+                if pd.isna(value):
+                    return ''
+                elif isinstance(value, datetime):
+                    return value.strftime('%Y-%m-%d %H:%M:%S')
+                elif isinstance(value, date):
+                    return value.strftime('%Y-%m-%d')
+                elif hasattr(value, 'strftime'):  # 기타 datetime 관련 객체
+                    return value.strftime('%Y-%m-%d')
+                else:
+                    return str(value)
+            
+            # 모든 데이터를 안전하게 변환
+            converted_data = []
+            for row in df.itertuples(index=False):
+                converted_row = [safe_convert_value(value) for value in row]
+                converted_data.append(converted_row)
+            
             # 헤더 정보 + 컬럼 헤더 + 데이터
-            data_to_upload = header_info + [df.columns.values.tolist()] + df.values.tolist()
+            data_to_upload = header_info + [df.columns.values.tolist()] + converted_data
         else:
             # 헤더 정보만
             data_to_upload = header_info + [["데이터가 없습니다."]]
