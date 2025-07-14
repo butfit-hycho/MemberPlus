@@ -24,6 +24,13 @@ st.markdown("""
     .stApp {
         background: white;
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        padding-top: 0 !important;
+    }
+    
+    /* 기본 컨테이너 여백 제거 */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
     }
     
     /* 사이드바 숨기기 */
@@ -34,8 +41,8 @@ st.markdown("""
     /* 메인 헤더 - 심플한 디자인 */
     .main-header {
         text-align: center;
-        padding: 3rem 2rem 2rem 2rem;
-        margin-bottom: 2rem;
+        padding: 2rem 1rem 1rem 1rem;
+        margin-bottom: 1rem;
     }
     
     .main-header h1 {
@@ -113,6 +120,11 @@ st.markdown("""
     }
     
     /* 진행바 스타일 */
+    .stProgress {
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
     .stProgress > div > div {
         background: #444FA9;
         border-radius: 0.25rem;
@@ -123,6 +135,8 @@ st.markdown("""
         background: #e5e7eb;
         border-radius: 0.25rem;
         height: 0.5rem;
+        margin: 0 !important;
+        border: none !important;
     }
     
     /* 결과 카드 */
@@ -514,7 +528,7 @@ def main():
     st.markdown("""
         <div class="main-header">
             <h1>📊 버핏 회원 관리 시스템</h1>
-            <p>유효회원/휴면회원 추출 및 구글 시트 업로드</p>
+            <p>지점별 회원 현황 조회</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -544,7 +558,7 @@ def main():
         )
     
     # 추출 버튼
-    if st.button("🚀 데이터 추출 및 구글 시트 업로드", type="primary"):
+    if st.button("🚀 회원 현황 조회", type="primary"):
         
         # 진행 상황 표시
         progress_bar = st.progress(0)
@@ -588,19 +602,32 @@ def main():
                     
                     # 성공 메시지
                     st.success(f"""
-                    🎉 **데이터 추출 및 업로드 완료!**
+                    🎉 **회원 현황 조회 완료!**
                     
                     - **회원 유형**: {member_type}
                     - **지점**: {selected_branch}
-                    - **추출 건수**: {len(df):,}명
+                    - **조회 건수**: {len(df):,}명
                     - **시트명**: {sheet_result['sheet_name']}
                     """)
                     
-                    # 구글 시트 열기 버튼
-                    if st.button("📄 구글 시트에서 보기", type="secondary"):
-                        st.markdown(f"[새 창에서 열기]({sheet_result['url']})")
+                    # 구글 시트 열기 버튼 (JavaScript로 새 창 열기)
+                    st.markdown(f"""
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <button onclick="window.open('{sheet_result['url']}', '_blank')" 
+                                style="background-color: #444FA9; 
+                                       color: white; 
+                                       border: none; 
+                                       padding: 0.5rem 1.5rem; 
+                                       border-radius: 0.5rem; 
+                                       cursor: pointer; 
+                                       font-weight: 600;
+                                       font-size: 1rem;">
+                            📄 구글 시트에서 보기
+                        </button>
+                    </div>
+                    """, unsafe_allow_html=True)
                 else:
-                    st.error("❌ 구글 시트 업로드에 실패했습니다.")
+                    st.error("❌ 회원 현황 조회에 실패했습니다.")
                 
                 # 진행 표시 제거
                 progress_bar.empty()
