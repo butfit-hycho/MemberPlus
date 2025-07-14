@@ -1,0 +1,58 @@
+name: 유효회원/휴면회원 추출
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # 매주 월요일 오전 9시
+  workflow_dispatch:      # 수동 실행 버튼
+    inputs:
+      branch_name:
+        description: '지점명 (전체 또는 특정 지점)'
+        required: true
+        default: '전체'
+        type: string
+
+jobs:
+  extract-users:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 코드 체크아웃
+      uses: actions/checkout@v3
+    
+    - name: Python 설정
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: 의존성 설치
+      run: |
+        pip install psycopg2-binary gspread google-auth pandas python-dotenv
+    
+    - name: 유효회원/휴면회원 추출
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+        SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+        BRANCH_NAME: ${{ github.event.inputs.branch_name || '전체' }}
+      run: |
+        python scripts/extract_users.py
+    
+    - name: 결과 알림
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const status = '${{ job.status }}';
+          const branch = '${{ env.BRANCH_NAME }}';
+          
+          console.log(`🎯 지점: ${branch}`);
+          console.log(`📊 상태: ${status}`);
+          
+          if (status === 'success') {
+            console.log('✅ 데이터 추출 완료!');
+          } else {
+            console.log('❌ 데이터 추출 실패');
+          } 

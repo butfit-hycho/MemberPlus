@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>유효회원/휴면회원 추출 시스템</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            background-color: white;
+            box-sizing: border-box;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .button-group {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .secondary-btn {
+            background-color: #2196F3;
+        }
+        
+        .secondary-btn:hover {
+            background-color: #1976D2;
+        }
+        
+        .danger-btn {
+            background-color: #f44336;
+        }
+        
+        .danger-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .progress {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .info-box {
+            background-color: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin: 5px 0;
+            color: #555;
+        }
+        
+        .result-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result-box h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .result-item {
+            margin: 8px 0;
+            padding: 8px;
+            background-color: white;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .result-item strong {
+            color: #333;
+        }
+        
+        .result-count {
+            background-color: #4CAF50;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 유효회원/휴면회원 추출 시스템</h1>
+        
+        <div class="info-box">
+            <h3>🔍 시스템 정보</h3>
+            <ul>
+                <li><strong>데이터베이스:</strong> 레플리카 DB (읽기 전용)</li>
+                <li><strong>추출 데이터:</strong> 유효회원, 휴면회원 분류</li>
+                <li><strong>결과 저장:</strong> 지점별 구글 스프레드시트 시트</li>
+                <li><strong>동시 사용:</strong> 여러 지점 동시 추출 가능</li>
+            </ul>
+        </div>
+        
+        <div class="form-group">
+            <label for="branchSelect">📍 지점 선택</label>
+            <select id="branchSelect">
+                <option value="">지점을 선택하세요...</option>
+                <option value="전체">전체</option>
+            </select>
+        </div>
+        
+        <div class="button-group">
+            <button id="refreshBtn" class="secondary-btn" onclick="refreshBranches()">
+                🔄 지점 목록 새로고침
+            </button>
+            <button id="extractBtn" onclick="startExtraction()">
+                🚀 데이터 추출 시작
+            </button>
+            <button id="testBtn" class="danger-btn" onclick="testConnection()">
+                🧪 연결 테스트
+            </button>
+        </div>
+        
+        <div id="progress" class="progress">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div id="progressText" class="progress-text">준비 중...</div>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <div id="resultBox" class="result-box">
+            <h3>📋 추출 결과</h3>
+            <div id="resultContent"></div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button id="openSheetBtn" class="secondary-btn" onclick="openSpreadsheet()">
+                    📄 스프레드시트 열기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 페이지 로드 시 지점 목록 불러오기
+        window.onload = function() {
+            refreshBranches();
+        };
+        
+        // 지점 목록 새로고침
+        function refreshBranches() {
+            showStatus('지점 목록을 불러오는 중...', 'info');
+            setButtonsEnabled(false);
+            
+            google.script.run
+                .withSuccessHandler(onBranchesLoaded)
+                .withFailureHandler(onError)
+                .getBranches();
+        }
+        
+        // 지점 목록 로드 성공
+        function onBranchesLoaded(branches) {
+            const select = document.getElementById('branchSelect');
+            select.innerHTML = '<option value="">지점을 선택하세요...</option>';
+            
+            branches.forEach(branch => {
+                const option = document.createElement('option');
+                option.value = branch;
+                option.textContent = branch;
+                select.appendChild(option);
+            });
+            
+            showStatus(`총 ${branches.length}개 지점을 불러왔습니다.`, 'success');
+            setButtonsEnabled(true);
+        }
+        
+        // 연결 테스트
+        function testConnection() {
+            showStatus('데이터베이스 연결을 테스트하는 중...', 'info');
+            setButtonsEnabled(false);
+            
+            google.script.run
+                .withSuccessHandler(onTestResult)
+                .withFailureHandler(onError)
+                .testConnection();
+        }
+        
+        // 연결 테스트 결과
+        function onTestResult(result) {
+            if (result.success) {
+                showStatus('✅ ' + result.message, 'success');
+            } else {
+                showStatus('❌ ' + result.message, 'error');
+            }
+            setButtonsEnabled(true);
+        }
+        
+        // 데이터 추출 시작
+        function startExtraction() {
+            const branchSelect = document.getElementById('branchSelect');
+            const selectedBranch = branchSelect.value;
+            
+            if (!selectedBranch) {
+                showStatus('❌ 지점을 선택해주세요.', 'error');
+                return;
+            }
+            
+            showStatus(`🔄 ${selectedBranch} 지점 데이터를 추출하는 중...`, 'info');
+            showProgress(true);
+            setButtonsEnabled(false);
+            
+            // 진행률 애니메이션
+            updateProgress(20, '데이터베이스 연결 중...');
+            
+            setTimeout(() => {
+                updateProgress(40, '유효회원 데이터 추출 중...');
+            }, 1000);
+            
+            setTimeout(() => {
+                updateProgress(60, '휴면회원 데이터 추출 중...');
+            }, 2000);
+            
+            setTimeout(() => {
+                updateProgress(80, '구글 시트 업로드 중...');
+            }, 3000);
+            
+            google.script.run
+                .withSuccessHandler(onExtractionComplete)
+                .withFailureHandler(onError)
+                .extractAndUploadData(selectedBranch);
+        }
+        
+        // 데이터 추출 완료
+        function onExtractionComplete(result) {
+            updateProgress(100, '완료!');
+            
+            setTimeout(() => {
+                showProgress(false);
+                setButtonsEnabled(true);
+                
+                if (result.success) {
+                    showStatus('✅ ' + result.message, 'success');
+                    showResult(result);
+                } else {
+                    showStatus('❌ ' + result.message, 'error');
+                }
+            }, 500);
+        }
+        
+        // 결과 표시
+        function showResult(result) {
+            const resultBox = document.getElementById('resultBox');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.innerHTML = `
+                <div class="result-item">
+                    <strong>유효회원</strong>
+                    <span class="result-count">${result.activeCount - 1}명</span>
+                </div>
+                <div class="result-item">
+                    <strong>휴면회원</strong>
+                    <span class="result-count">${result.inactiveCount - 1}명</span>
+                </div>
+                <div class="result-item">
+                    <strong>생성된 시트</strong>
+                    <span class="result-count">${result.sheets.length}개</span>
+                </div>
+            `;
+            
+            resultBox.style.display = 'block';
+        }
+        
+        // 스프레드시트 열기
+        function openSpreadsheet() {
+            google.script.run
+                .withSuccessHandler(function(url) {
+                    window.open(url, '_blank');
+                })
+                .withFailureHandler(onError)
+                .getSpreadsheetUrl();
+        }
+        
+        // 진행률 표시
+        function showProgress(show) {
+            const progress = document.getElementById('progress');
+            progress.style.display = show ? 'block' : 'none';
+            
+            if (!show) {
+                updateProgress(0, '');
+            }
+        }
+        
+        // 진행률 업데이트
+        function updateProgress(percentage, text) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = text;
+        }
+        
+        // 상태 메시지 표시
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            status.style.display = 'block';
+            
+            // 3초 후 자동으로 숨기기 (에러 메시지 제외)
+            if (type !== 'error') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // 버튼 활성화/비활성화
+        function setButtonsEnabled(enabled) {
+            const buttons = ['refreshBtn', 'extractBtn', 'testBtn'];
+            buttons.forEach(id => {
+                document.getElementById(id).disabled = !enabled;
+            });
+        }
+        
+        // 에러 처리
+        function onError(error) {
+            showStatus('❌ 오류가 발생했습니다: ' + error.message, 'error');
+            showProgress(false);
+            setButtonsEnabled(true);
+            console.error('Error:', error);
+        }
+    </script>
+</body>
+</html> 

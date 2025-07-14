@@ -1,0 +1,13 @@
+# 데이터베이스 설정 (PostgreSQL)
+DB_HOST=butfitseoul-replica.cjilul7too7t.ap-northeast-2.rds.amazonaws.com
+DB_PORT=5432
+DB_USERNAME=your-username
+DB_PASSWORD=your-password
+DB_DATABASE=master_20221217
+DB_DRIVER=postgresql
+
+# 구글 스프레드시트 설정
+GOOGLE_SERVICE_ACCOUNT_FILE=credentials/google_service_account.json
+SPREADSHEET_ID=1Zi2VmX1Mp2swgC5QlwvAjhndc-MH8SM4YR1TlqNMjm4
+ACTIVE_USERS_SHEET=유효회원
+INACTIVE_USERS_SHEET=휴면회원 
