@@ -60,31 +60,6 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* 검색 폼 카드 */
-    .search-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 1rem;
-        border: 2px solid #e5e7eb;
-        margin: 2rem auto;
-        max-width: 500px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    
-    .search-card:hover {
-        border-color: #444FA9;
-        box-shadow: 0 10px 15px -3px rgba(68, 79, 169, 0.1);
-    }
-    
-    .search-card h3 {
-        color: #444FA9;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        font-size: 1.3rem;
-        text-align: center;
-        letter-spacing: -0.025em;
-    }
-    
     /* 버튼 스타일 */
     .stButton > button {
         background: #444FA9;
@@ -105,6 +80,12 @@ st.markdown("""
         transform: translateY(-1px);
     }
     
+    /* 커스텀 버튼 스타일 (호버 효과) */
+    .google-sheet-button:hover {
+        background: #3730a3 !important;
+        transform: translateY(-1px) !important;
+    }
+    
     /* 선택 박스 스타일 */
     .stSelectbox > div > div {
         background: white;
@@ -119,24 +100,25 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(68, 79, 169, 0.1);
     }
     
-    /* 진행바 스타일 */
-    .stProgress {
-        margin-top: 0 !important;
-        margin-bottom: 0.5rem !important;
+    /* 진행바 스타일 개선 */
+    div[data-testid="stProgress"] {
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
-    .stProgress > div > div {
-        background: #444FA9;
-        border-radius: 0.25rem;
-        height: 0.5rem;
-    }
-    
-    .stProgress > div {
-        background: #e5e7eb;
-        border-radius: 0.25rem;
-        height: 0.5rem;
+    div[data-testid="stProgress"] > div {
+        background: #e5e7eb !important;
+        border-radius: 0.25rem !important;
+        height: 8px !important;
         margin: 0 !important;
         border: none !important;
+        box-shadow: none !important;
+    }
+    
+    div[data-testid="stProgress"] > div > div {
+        background: #444FA9 !important;
+        border-radius: 0.25rem !important;
+        height: 8px !important;
     }
     
     /* 결과 카드 */
@@ -224,9 +206,8 @@ st.markdown("""
             font-size: 2rem;
         }
         
-        .search-card {
-            margin: 1rem;
-            padding: 1.5rem;
+        .main-header {
+            padding: 2rem 1rem 1rem 1rem;
         }
     }
 </style>
@@ -537,8 +518,7 @@ def main():
         st.session_state.extraction_result = None
     
     # 검색 폼
-    st.markdown('<div class="search-card">', unsafe_allow_html=True)
-    st.markdown('<h3>🔍 회원 데이터 추출</h3>', unsafe_allow_html=True)
+    st.markdown('<h3 style="text-align: center; color: #444FA9; font-weight: 600; margin-bottom: 1.5rem;">🔍 회원 데이터 추출</h3>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
@@ -610,22 +590,22 @@ def main():
                     - **시트명**: {sheet_result['sheet_name']}
                     """)
                     
-                    # 구글 시트 열기 버튼 (JavaScript로 새 창 열기)
-                    st.markdown(f"""
-                    <div style="text-align: center; margin-top: 1rem;">
-                        <button onclick="window.open('{sheet_result['url']}', '_blank')" 
-                                style="background-color: #444FA9; 
-                                       color: white; 
-                                       border: none; 
-                                       padding: 0.5rem 1.5rem; 
-                                       border-radius: 0.5rem; 
-                                       cursor: pointer; 
-                                       font-weight: 600;
-                                       font-size: 1rem;">
-                            📄 구글 시트에서 보기
-                        </button>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    # 구글 시트 열기 버튼
+                    col1, col2, col3 = st.columns([1, 2, 1])
+                    with col2:
+                        st.markdown(f"""
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <button onclick="window.open('{sheet_result['url']}', '_blank')" 
+                                    style="background: #444FA9; color: white; border: none; border-radius: 0.5rem; 
+                                           padding: 0.75rem 2rem; font-weight: 600; font-size: 1rem; 
+                                           cursor: pointer; width: 100%; font-family: 'Pretendard', sans-serif;
+                                           transition: all 0.2s ease;"
+                                    onmouseover="this.style.background='#3730a3'; this.style.transform='translateY(-1px)'"
+                                    onmouseout="this.style.background='#444FA9'; this.style.transform='translateY(0)'">
+                                📄 구글 시트에서 보기
+                            </button>
+                        </div>
+                        """, unsafe_allow_html=True)
                 else:
                     st.error("❌ 회원 현황 조회에 실패했습니다.")
                 
@@ -637,8 +617,6 @@ def main():
             st.error(f"❌ 처리 중 오류가 발생했습니다: {e}")
             progress_bar.empty()
             status_text.empty()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
     
     # 최근 추출 결과 표시
     if st.session_state.extraction_result:
