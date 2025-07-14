@@ -481,6 +481,7 @@ def create_google_sheet(member_type, branch_name, df):
 def main():
     """메인 애플리케이션"""
     
+    # 강제 재배포 트리거 (2025.01.14)
     # 구글 시트 연결 확인 (필수)
     gc = get_google_sheets_client()
     
